@@ -1,0 +1,15 @@
+<%- include('layout', { title: locals.category ? 'تعديل تصنيف' : 'تصنيف جديد' }) %>
+<h1><%= locals.category ? 'تعديل التصنيف' : 'تصنيف جديد' %></h1>
+<form action="/admin/categories<%= locals.category ? '/' + category.id : '' %>" method="POST">
+  <div class="form-group">
+    <label for="name">اسم التصنيف</label>
+    <input type="text" id="name" name="name" value="<%= locals.category ? category.name : '' %>" required>
+  </div>
+  <div class="form-group">
+    <label for="sort_order">الترتيب</label>
+    <input type="number" id="sort_order" name="sort_order" value="<%= locals.category ? category.sort_order : '0' %>" min="0">
+  </div>
+  <button type="submit" class="btn btn-primary">حفظ</button>
+  <a href="/admin/categories" class="btn">إلغاء</a>
+</form>
+<%- include('../partials/footer') %>

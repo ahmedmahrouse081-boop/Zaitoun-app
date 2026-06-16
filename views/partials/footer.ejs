@@ -1,0 +1,45 @@
+  </main>
+
+  <footer class="footer">
+    <div class="container-wide">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <span class="logo-text-main"><%= typeof settings.site_name !== 'undefined' ? settings.site_name : 'زيتون' %></span>
+          <p><%= typeof settings.footer_desc !== 'undefined' ? settings.footer_desc : '' %></p>
+        </div>
+        <div>
+          <h4>روابط سريعة</h4>
+          <ul class="footer-links">
+            <li><a href="/">القائمة</a></li>
+            <li><a href="/track">تتبع الطلب</a></li>
+            <li><a href="/cart">السلة</a></li>
+            <li><a href="/admin">لوحة التحكم</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>مواعيد العمل</h4>
+          <ul class="footer-links">
+            <li><%= typeof settings.hours_weekdays !== 'undefined' ? settings.hours_weekdays : 'السبت - الخميس: ٨ ص - ١١ م' %></li>
+            <li><%= typeof settings.hours_friday !== 'undefined' ? settings.hours_friday : 'الجمعة: ٢ م - ١١ م' %></li>
+          </ul>
+        </div>
+        <div class="footer-contact">
+          <h4>اتصل بنا</h4>
+          <p>هاتف: <%= typeof settings.contact_phone !== 'undefined' ? settings.contact_phone : '(02) 1234 5678' %></p>
+          <p>بريد: <%= typeof settings.contact_email !== 'undefined' ? settings.contact_email : 'hello@zaitoun.eg' %></p>
+          <p><%= typeof settings.contact_address !== 'undefined' ? settings.contact_address : '٣٥ شارع النيل، القاهرة' %></p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 مطعم زيتون المصري. جميع الحقوق محفوظة.</p>
+        <div class="footer-social">
+          <a href="#">فيسبوك</a>
+          <a href="#">إنستغرام</a>
+          <a href="#">واتساب</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

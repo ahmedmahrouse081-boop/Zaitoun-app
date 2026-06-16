@@ -1,0 +1,25 @@
+<%- include('layout', { title: 'أصناف القائمة' }) %>
+<div class="page-header">
+  <h1>أصناف القائمة</h1>
+  <a href="/admin/menu-items/new" class="btn btn-primary">+ إضافة صنف</a>
+</div>
+<table class="admin-table">
+  <thead><tr><th>الاسم</th><th>التصنيف</th><th>السعر</th><th>متاح</th><th>إجراءات</th></tr></thead>
+  <tbody>
+    <% items.forEach(function(item) { %>
+      <tr>
+        <td><%= item.name %></td>
+        <td><%= item.category_name %></td>
+        <td>ج.م<%= item.base_price.toFixed(2) %></td>
+        <td><%= item.available ? 'نعم' : 'لا' %></td>
+        <td class="actions">
+          <a href="/admin/menu-items/<%= item.id %>/edit" class="btn btn-sm">تعديل</a>
+          <form action="/admin/menu-items/<%= item.id %>/delete" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف هذا الصنف؟')" style="display:inline">
+            <button type="submit" class="btn btn-sm btn-danger">حذف</button>
+          </form>
+        </td>
+      </tr>
+    <% }); %>
+  </tbody>
+</table>
+<%- include('../partials/footer') %>

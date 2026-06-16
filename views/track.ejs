@@ -1,0 +1,35 @@
+<%- include('partials/header', { title: 'تتبع الطلب' }) %>
+<div class="track-page">
+<h1>تتبع طلبك</h1>
+<form action="/track" method="POST" class="track-form">
+  <div class="form-group">
+    <label for="orderId">أدخل رقم الطلب</label>
+    <input type="text" id="orderId" name="orderId" required placeholder="مثال: ABC12345">
+  </div>
+  <button type="submit" class="btn btn-primary">تتبع</button>
+</form>
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="alert alert-error"><%= error %></div>
+<% } %>
+<% if (typeof order !== 'undefined' && order) { %>
+  <div class="track-result">
+    <h2>الطلب #<%= order.id %></h2>
+    <p class="order-status">الحالة: <span class="status-badge status-<%= order.status %>"><%= order.status %></span></p>
+    <p>العميل: <%= order.customer_name %></p>
+    <div class="order-details">
+      <% items.forEach(function(item) { %>
+        <div class="conf-item">
+          <span><%= item.quantity %>x <%= item.item_name %></span>
+          <span>ج.م<%= (item.unit_price * item.quantity).toFixed(2) %></span>
+        </div>
+        <% if (item.additions.length > 0) { %>
+          <div class="conf-additions">+ <%= item.additions.map(function(a) { return a.addition_name; }).join(', ') %></div>
+        <% } %>
+      <% }); %>
+      <div class="conf-total">الإجمالي: ج.م<%= order.total_price.toFixed(2) %></div>
+      <p>تاريخ الطلب: <%= order.created_at %></p>
+    </div>
+  </div>
+<% } %>
+</div>
+<%- include('partials/footer') %>

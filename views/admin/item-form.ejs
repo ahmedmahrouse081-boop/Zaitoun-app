@@ -1,0 +1,48 @@
+<%- include('layout', { title: locals.item ? 'تعديل صنف' : 'إضافة صنف' }) %>
+<h1><%= locals.item ? 'تعديل الصنف' : 'إضافة صنف جديد' %></h1>
+<form action="/admin/menu-items<%= locals.item ? '/' + item.id : '' %>" method="POST" enctype="multipart/form-data">
+  <div class="form-group">
+    <label for="name">اسم الصنف</label>
+    <input type="text" id="name" name="name" value="<%= locals.item ? item.name : '' %>" required>
+  </div>
+  <div class="form-group">
+    <label for="description">الوصف</label>
+    <textarea id="description" name="description" rows="3"><%= locals.item && item.description ? item.description : '' %></textarea>
+  </div>
+  <div class="form-group">
+    <label for="base_price">السعر (ج.م)</label>
+    <input type="number" id="base_price" name="base_price" step="0.01" value="<%= locals.item ? item.base_price : '' %>" required>
+  </div>
+  <div class="form-group">
+    <label for="category_id">التصنيف</label>
+    <select id="category_id" name="category_id" required>
+      <% categories.forEach(function(cat) { %>
+        <option value="<%= cat.id %>" <%= locals.item && item.category_id == cat.id ? 'selected' : '' %>><%= cat.name %></option>
+      <% }); %>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="image">صورة (اختياري)</label>
+    <input type="file" id="image" name="image" accept="image/*">
+  </div>
+  <div class="form-group">
+    <label>
+      <input type="checkbox" name="available" value="1" <%= !locals.item || item.available ? 'checked' : '' %>>
+      متاح
+    </label>
+  </div>
+  <div class="form-group">
+    <label>الإضافات المتاحة</label>
+    <div class="checkbox-grid">
+      <% allAdditions.forEach(function(add) { %>
+        <label class="checkbox-item">
+          <input type="checkbox" name="additions" value="<%= add.id %>" <%= locals.selectedAdditions && selectedAdditions.includes(add.id) ? 'checked' : '' %>>
+          <%= add.name %> (ج.م<%= add.price.toFixed(2) %>)
+        </label>
+      <% }); %>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary">حفظ</button>
+  <a href="/admin/menu-items" class="btn">إلغاء</a>
+</form>
+<%- include('../partials/footer') %>

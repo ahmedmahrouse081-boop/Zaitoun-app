@@ -1,0 +1,152 @@
+<%- include('partials/header', { title: 'الرئيسية' }) %>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-content">
+    <span class="hero-badge">تأسس 2026</span>
+    <h1><%= typeof settings.hero_title !== 'undefined' ? settings.hero_title : 'زيتون' %></h1>
+    <p class="hero-arabic"><%= typeof settings.hero_subtitle !== 'undefined' ? settings.hero_subtitle : 'فول - طعمية - فطار مصري - مشويات' %></p>
+    <p class="hero-sub"><%= typeof settings.hero_desc !== 'undefined' ? settings.hero_desc : 'أشهى الأكلات المصرية الأصيلة.' %></p>
+    <div class="hero-actions">
+      <a href="#menu" class="btn btn-primary">تصفح القائمة</a>
+      <a href="/track" class="btn btn-outline">تتبع الطلب</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="features-section">
+  <div class="container-wide">
+    <div class="section-header">
+      <span class="section-tag">لماذا تختارنا</span>
+      <h2 class="section-title">تجربة زيتون</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">&#127860;</div>
+        <h3><%= typeof settings.feature_1_title !== 'undefined' ? settings.feature_1_title : 'مكونات طازجة' %></h3>
+        <p><%= typeof settings.feature_1_desc !== 'undefined' ? settings.feature_1_desc : '' %></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128218;</div>
+        <h3><%= typeof settings.feature_2_title !== 'undefined' ? settings.feature_2_title : 'وصفات تقليدية' %></h3>
+        <p><%= typeof settings.feature_2_desc !== 'undefined' ? settings.feature_2_desc : '' %></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128666;</div>
+        <h3><%= typeof settings.feature_3_title !== 'undefined' ? settings.feature_3_title : 'توصيل سريع' %></h3>
+        <p><%= typeof settings.feature_3_desc !== 'undefined' ? settings.feature_3_desc : '' %></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ABOUT SPLIT ===== -->
+<section class="about-section">
+  <div class="container-wide">
+    <div class="split-layout">
+      <div class="split-visual">
+        <div class="split-visual-inner">
+          <div class="split-visual-icon">&#127860;&#65039;</div>
+          <h3>مطبخ زيتون</h3>
+          <p>حيث تنبض النكهات المصرية بالحياة</p>
+        </div>
+      </div>
+      <div class="split-content">
+        <span class="section-tag">قصتنا</span>
+        <h2><%= typeof settings.about_title !== 'undefined' ? settings.about_title : 'الطعام المصري، بروح عصرية' %></h2>
+        <p><%= typeof settings.about_desc_1 !== 'undefined' ? settings.about_desc_1 : '' %></p>
+        <p><%= typeof settings.about_desc_2 !== 'undefined' ? settings.about_desc_2 : '' %></p>
+        <a href="#menu" class="btn btn-primary">عرض القائمة كاملة</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SHOWCASE ===== -->
+<section class="showcase-section">
+  <div class="container-wide">
+    <div class="section-header">
+      <span class="section-tag">أطباقنا المميزة</span>
+      <h2 class="section-title">الأكثر طلباً</h2>
+      <p class="section-desc">أشهر أطباقنا المُعدة بإتقان</p>
+    </div>
+    <div class="showcase-grid">
+      <div class="showcase-card">
+        <div class="showcase-visual"><span class="showcase-emoji">&#129472;</span></div>
+        <div class="showcase-body">
+          <h3>فول مدمس</h3>
+          <p>فول مدمس مطهو ببطء مع زيت الزيتون والليمون والثوم والتوابل المصرية الأصيلة.</p>
+        </div>
+      </div>
+      <div class="showcase-card">
+        <div class="showcase-visual"><span class="showcase-emoji">&#129473;</span></div>
+        <div class="showcase-body">
+          <h3>طعمية</h3>
+          <p>قرص طعمية مقلية ذهبية من الفول الطازج والأعشاب والبهارات العطرية.</p>
+        </div>
+      </div>
+      <div class="showcase-card">
+        <div class="showcase-visual"><span class="showcase-emoji">&#127828;</span></div>
+        <div class="showcase-body">
+          <h3>فطار مصري</h3>
+          <p>وجبة فطار كاملة: فول، طعمية، بيض، جبن، عيش بلدي، وشاي.</p>
+        </div>
+      </div>
+      <div class="showcase-card">
+        <div class="showcase-visual"><span class="showcase-emoji">&#127830;</span></div>
+        <div class="showcase-body">
+          <h3>مشويات</h3>
+          <p>كفتة وشيش طاووك وكباب على الفحم، متبلة بالبهارات المصرية.</p>
+        </div>
+      </div>
+      <div class="showcase-card">
+        <div class="showcase-visual"><span class="showcase-emoji">&#129367;</span></div>
+        <div class="showcase-body">
+          <h3>كشري</h3>
+          <p>الطبق الوطني المصري — أرز، عدس، مكرونة، بصل مقرمش، وصلصة طماطم حارة.</p>
+        </div>
+      </div>
+      <div class="showcase-card">
+        <div class="showcase-visual"><span class="showcase-emoji">&#127790;</span></div>
+        <div class="showcase-body">
+          <h3>حواوشي</h3>
+          <p>لحم مفروم متبل داخل عيش بلدي، مشوي حتى المقرمشة الذهبية.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MENU ===== -->
+<section id="menu" class="menu-section">
+  <div class="container-wide">
+    <div class="section-header">
+      <span class="section-tag">اطلب الآن</span>
+      <h2 class="section-title">قائمة الطعام</h2>
+      <p class="section-desc">تصفح قائمتنا الكاملة وخصص طلبك</p>
+    </div>
+    <% if (locals.categories && categories.length > 0) { %>
+      <% categories.forEach(function(cat) { %>
+        <section class="category-section">
+          <h2 class="category-title"><%= cat.name %></h2>
+          <div class="menu-grid">
+            <% cat.items.forEach(function(item) { %>
+              <a href="/item/<%= item.id %>" class="menu-card">
+                <h3><%= item.name %></h3>
+                <p class="desc"><%= item.description.substring(0, 80) %><%= item.description.length > 80 ? '...' : '' %></p>
+                <span class="price"><%= item.base_price.toFixed(2) %> ج.م</span>
+              </a>
+            <% }); %>
+          </div>
+        </section>
+      <% }); %>
+    <% } else { %>
+      <div class="empty-state">
+        <p>القائمة فارغة حالياً. تفضل بزيارتنا لاحقاً!</p>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

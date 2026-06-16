@@ -1,0 +1,30 @@
+<%- include('partials/header', { title: 'تخصيص - ' + item.name }) %>
+<div class="back-link"><a href="/">&larr; رجوع إلى القائمة</a></div>
+<div class="customize-page">
+  <div class="customize-card">
+    <h1><%= item.name %></h1>
+    <p class="item-desc"><%= item.description %></p>
+    <p class="item-price">السعر الأساسي: ج.م<%= item.base_price.toFixed(2) %></p>
+    <form action="/cart/add" method="POST">
+      <input type="hidden" name="itemId" value="<%= item.id %>">
+      <div class="form-group">
+        <label>الكمية:</label>
+        <input type="number" name="quantity" value="1" min="1" max="20">
+      </div>
+      <% if (additions.length > 0) { %>
+        <div class="additions-section">
+          <h3>إضافات:</h3>
+          <% additions.forEach(function(add) { %>
+            <label class="addition-item">
+              <input type="checkbox" name="additions" value="<%= add.id %>">
+              <span><%= add.name %></span>
+              <% if (add.price > 0) { %><span class="add-price">+ج.م<%= add.price.toFixed(2) %></span><% } else { %><span class="add-free">مجاناً</span><% } %>
+            </label>
+          <% }); %>
+        </div>
+      <% } %>
+      <button type="submit" class="btn btn-primary btn-block">أضف إلى السلة</button>
+    </form>
+  </div>
+</div>
+<%- include('partials/footer') %>

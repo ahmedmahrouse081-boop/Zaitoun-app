@@ -1,0 +1,23 @@
+<%- include('layout', { title: locals.addition ? 'تعديل إضافة' : 'إضافة جديدة' }) %>
+<h1><%= locals.addition ? 'تعديل الإضافة' : 'إضافة جديدة' %></h1>
+<form action="/admin/additions<%= locals.addition ? '/' + addition.id : '' %>" method="POST">
+  <div class="form-group">
+    <label for="name">اسم الإضافة</label>
+    <input type="text" id="name" name="name" value="<%= locals.addition ? addition.name : '' %>" required>
+  </div>
+  <div class="form-group">
+    <label for="price">السعر (ج.م)</label>
+    <input type="number" id="price" name="price" step="0.01" value="<%= locals.addition ? addition.price : '0' %>" min="0" required>
+  </div>
+  <% if (locals.addition) { %>
+  <div class="form-group">
+    <label>
+      <input type="checkbox" name="available" value="1" <%= addition.available ? 'checked' : '' %>>
+      متاح
+    </label>
+  </div>
+  <% } %>
+  <button type="submit" class="btn btn-primary">حفظ</button>
+  <a href="/admin/additions" class="btn">إلغاء</a>
+</form>
+<%- include('../partials/footer') %>

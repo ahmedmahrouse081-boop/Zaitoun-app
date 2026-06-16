@@ -1,0 +1,26 @@
+<%- include('partials/header', { title: 'تم تأكيد الطلب' }) %>
+<div class="confirmation-page">
+  <div class="confirmation-card">
+    <div class="success-icon">&#10003;</div>
+    <h1>تم الطلب!</h1>
+    <p class="order-id-label">رقم الطلب:</p>
+    <p class="order-id"><%= order.id %></p>
+    <p class="order-status">الحالة: <span class="status-badge status-<%= order.status %>"><%= order.status %></span></p>
+    <p>سيتم تجهيز طلبك فوراً!</p>
+    <div class="order-details">
+      <h3>الأصناف</h3>
+      <% items.forEach(function(item) { %>
+        <div class="conf-item">
+          <span><%= item.quantity %>x <%= item.item_name %></span>
+          <span>ج.م<%= (item.unit_price * item.quantity).toFixed(2) %></span>
+        </div>
+        <% if (item.additions.length > 0) { %>
+          <div class="conf-additions">+ <%= item.additions.map(function(a) { return a.addition_name; }).join(', ') %></div>
+        <% } %>
+      <% }); %>
+      <div class="conf-total">الإجمالي: ج.م<%= order.total_price.toFixed(2) %></div>
+    </div>
+    <a href="/" class="btn btn-primary">رجوع إلى القائمة</a>
+  </div>
+</div>
+<%- include('partials/footer') %>

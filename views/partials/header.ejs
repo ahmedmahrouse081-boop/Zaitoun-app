@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>زيتون - <%= typeof title !== 'undefined' ? title : 'مطعم مصري' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🫒</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo">
+        <span class="logo-symbol">
+          <span class="logo-diamond"></span>
+          <span class="logo-branch"></span>
+        </span>
+        <span class="logo-text-group">
+          <span class="logo-text-main"><%= typeof settings.site_name !== 'undefined' ? settings.site_name : 'زيتون' %></span>
+          <span class="logo-text-sub"><%= typeof settings.site_tagline !== 'undefined' ? settings.site_tagline : 'مطعم مصري' %></span>
+        </span>
+      </a>
+      <div class="nav-links">
+        <a href="/">القائمة</a>
+        <a href="/track">تتبع الطلب</a>
+        <a href="/cart" class="cart-link">السلة <% if (locals.cartCount && cartCount > 0) { %><span class="badge"><%= cartCount %></span><% } %></a>
+      </div>
+    </div>
+  </nav>
+  <main class="container">

@@ -1,0 +1,49 @@
+<%- include('layout', { title: 'الطلبات' }) %>
+<div class="page-header">
+  <h1>الطلبات</h1>
+  <div class="filter-group">
+    <a href="/admin/orders" class="btn btn-sm <%= statusFilter === 'all' ? 'active' : '' %>">الكل</a>
+    <a href="/admin/orders?status=pending" class="btn btn-sm <%= statusFilter === 'pending' ? 'active' : '' %>">قيد الانتظار</a>
+    <a href="/admin/orders?status=preparing" class="btn btn-sm <%= statusFilter === 'preparing' ? 'active' : '' %>">قيد التحضير</a>
+    <a href="/admin/orders?status=completed" class="btn btn-sm <%= statusFilter === 'completed' ? 'active' : '' %>">مكتمل</a>
+    <a href="/admin/orders?status=cancelled" class="btn btn-sm <%= statusFilter === 'cancelled' ? 'active' : '' %>">ملغي</a>
+  </div>
+</div>
+<% if (orders.length > 0) { %>
+  <% orders.forEach(function(order) { %>
+    <div class="order-card">
+      <div class="order-header">
+        <h3>الطلب #<%= order.id %></h3>
+        <span class="status-badge status-<%= order.status %>"><%= order.status %></span>
+      </div>
+      <div class="order-body">
+        <p><strong><%= order.customer_name %></strong> - <%= order.customer_phone %></p>
+        <p><%= order.created_at %></p>
+        <% if (order.notes) { %><p class="order-notes">ملاحظات: <%= order.notes %></p><% } %>
+        <% order.items.forEach(function(item) { %>
+          <div class="order-item-row">
+            <span><%= item.quantity %>x <%= item.item_name %></span>
+            <span>ج.م<%= (item.unit_price * item.quantity).toFixed(2) %></span>
+          </div>
+          <% if (item.additions.length > 0) { %>
+            <div class="order-item-additions">+ <%= item.additions.map(function(a) { return a.addition_name; }).join(', ') %></div>
+          <% } %>
+        <% }); %>
+        <div class="order-total"><strong>الإجمالي: ج.م<%= order.total_price.toFixed(2) %></strong></div>
+      </div>
+      <div class="order-actions">
+        <form action="/admin/orders/<%= order.id %>/status" method="POST" class="status-form">
+          <select name="status" onchange="this.form.submit()">
+            <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>قيد الانتظار</option>
+            <option value="preparing" <%= order.status === 'preparing' ? 'selected' : '' %>>قيد التحضير</option>
+            <option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>مكتمل</option>
+            <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>ملغي</option>
+          </select>
+        </form>
+      </div>
+    </div>
+  <% }); %>
+<% } else { %>
+  <div class="empty-state"><p>لا توجد طلبات.</p></div>
+<% } %>
+<%- include('../partials/footer') %>

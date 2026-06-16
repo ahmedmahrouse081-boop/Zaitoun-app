@@ -1,0 +1,38 @@
+<%- include('partials/header', { title: 'إتمام الطلب' }) %>
+<div class="checkout-page">
+<div class="back-link"><a href="/cart">&larr; رجوع إلى السلة</a></div>
+<h1>إتمام الطلب</h1>
+<div class="checkout-layout">
+  <div class="checkout-summary">
+    <h2>ملخص الطلب</h2>
+    <% cart.forEach(function(item) { %>
+      <div class="checkout-item">
+        <span><%= item.quantity %>x <%= item.itemName %></span>
+        <span>ج.م<%= (item.unitPrice * item.quantity).toFixed(2) %></span>
+      </div>
+      <% if (item.additions.length > 0) { %>
+        <div class="checkout-additions">+ <%= item.additions.map(function(a) { return a.name; }).join(', ') %></div>
+      <% } %>
+    <% }); %>
+    <div class="checkout-total">
+      <strong>الإجمالي: ج.م<%= cart.reduce(function(s, i) { return s + i.unitPrice * i.quantity; }, 0).toFixed(2) %></strong>
+    </div>
+  </div>
+  <form action="/checkout" method="POST" class="checkout-form">
+    <div class="form-group">
+      <label for="customerName">الاسم *</label>
+      <input type="text" id="customerName" name="customerName" required placeholder="مثال: أحمد علي">
+    </div>
+    <div class="form-group">
+      <label for="customerPhone">رقم الهاتف *</label>
+      <input type="tel" id="customerPhone" name="customerPhone" required placeholder="مثال: ٠١٢٣٤٥٦٧٨٩٠">
+    </div>
+    <div class="form-group">
+      <label for="notes">ملاحظات (اختياري)</label>
+      <textarea id="notes" name="notes" rows="3" placeholder="أي طلبات خاصة؟"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary btn-block">تأكيد الطلب</button>
+  </form>
+</div>
+</div>
+<%- include('partials/footer') %>

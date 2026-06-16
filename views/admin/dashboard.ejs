@@ -1,0 +1,53 @@
+<%- include('layout', { title: 'الرئيسية' }) %>
+<h1>لوحة التحكم</h1>
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-number"><%= stats.totalOrders %></span>
+    <span class="stat-label">إجمالي الطلبات</span>
+  </div>
+  <div class="stat-card warning">
+    <span class="stat-number"><%= stats.pendingOrders %></span>
+    <span class="stat-label">قيد الانتظار</span>
+  </div>
+  <div class="stat-card info">
+    <span class="stat-number"><%= stats.preparingOrders %></span>
+    <span class="stat-label">قيد التحضير</span>
+  </div>
+  <div class="stat-card success">
+    <span class="stat-number"><%= stats.completedOrders %></span>
+    <span class="stat-label">مكتمل</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-number">ج.م<%= stats.totalRevenue.toFixed(2) %></span>
+    <span class="stat-label">الإيرادات</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-number"><%= stats.menuItems %></span>
+    <span class="stat-label">أصناف القائمة</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-number"><%= stats.additions %></span>
+    <span class="stat-label">الإضافات</span>
+  </div>
+</div>
+
+<h2>أحدث الطلبات</h2>
+<% if (stats.recentOrders.length > 0) { %>
+  <table class="admin-table">
+    <thead><tr><th>رقم الطلب</th><th>العميل</th><th>الإجمالي</th><th>الحالة</th><th>الوقت</th></tr></thead>
+    <tbody>
+      <% stats.recentOrders.forEach(function(o) { %>
+        <tr>
+          <td><a href="/admin/orders"><%= o.id %></a></td>
+          <td><%= o.customer_name %></td>
+          <td>ج.م<%= o.total_price.toFixed(2) %></td>
+          <td><span class="status-badge status-<%= o.status %>"><%= o.status %></span></td>
+          <td><%= o.created_at %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } else { %>
+  <div class="empty-state"><p>لا توجد طلبات بعد.</p></div>
+<% } %>
+<%- include('../partials/footer') %>

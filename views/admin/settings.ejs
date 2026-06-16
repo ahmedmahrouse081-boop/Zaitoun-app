@@ -1,0 +1,138 @@
+<%- include('layout', { title: 'الإعدادات' }) %>
+
+<div class="admin-section">
+  <h1>إعدادات الموقع</h1>
+  <form method="POST" class="settings-form">
+    <fieldset>
+      <legend>الهوية الأساسية</legend>
+      <label>اسم الموقع
+        <input type="text" name="site_name" value="<%= settings.site_name || '' %>">
+      </label>
+      <label>شعار الموقع
+        <input type="text" name="site_tagline" value="<%= settings.site_tagline || '' %>">
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>القسم العلوي (Hero)</legend>
+      <label>العنوان
+        <input type="text" name="hero_title" value="<%= settings.hero_title || '' %>">
+      </label>
+      <label>العنوان الفرعي
+        <input type="text" name="hero_subtitle" value="<%= settings.hero_subtitle || '' %>">
+      </label>
+      <label>الوصف
+        <textarea name="hero_desc" rows="3"><%= settings.hero_desc || '' %></textarea>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>المميزات</legend>
+      <label>الميزة الأولى — عنوان
+        <input type="text" name="feature_1_title" value="<%= settings.feature_1_title || '' %>">
+      </label>
+      <label>الميزة الأولى — وصف
+        <textarea name="feature_1_desc" rows="2"><%= settings.feature_1_desc || '' %></textarea>
+      </label>
+      <label>الميزة الثانية — عنوان
+        <input type="text" name="feature_2_title" value="<%= settings.feature_2_title || '' %>">
+      </label>
+      <label>الميزة الثانية — وصف
+        <textarea name="feature_2_desc" rows="2"><%= settings.feature_2_desc || '' %></textarea>
+      </label>
+      <label>الميزة الثالثة — عنوان
+        <input type="text" name="feature_3_title" value="<%= settings.feature_3_title || '' %>">
+      </label>
+      <label>الميزة الثالثة — وصف
+        <textarea name="feature_3_desc" rows="2"><%= settings.feature_3_desc || '' %></textarea>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>قسم "قصتنا"</legend>
+      <label>العنوان
+        <input type="text" name="about_title" value="<%= settings.about_title || '' %>">
+      </label>
+      <label>الفقرة الأولى
+        <textarea name="about_desc_1" rows="3"><%= settings.about_desc_1 || '' %></textarea>
+      </label>
+      <label>الفقرة الثانية
+        <textarea name="about_desc_2" rows="3"><%= settings.about_desc_2 || '' %></textarea>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>التذييل والتواصل</legend>
+      <label>وصف التذييل
+        <textarea name="footer_desc" rows="2"><%= settings.footer_desc || '' %></textarea>
+      </label>
+      <label>الهاتف
+        <input type="text" name="contact_phone" value="<%= settings.contact_phone || '' %>">
+      </label>
+      <label>البريد الإلكتروني
+        <input type="text" name="contact_email" value="<%= settings.contact_email || '' %>">
+      </label>
+      <label>العنوان
+        <input type="text" name="contact_address" value="<%= settings.contact_address || '' %>">
+      </label>
+      <label>مواعيد أيام الأسبوع
+        <input type="text" name="hours_weekdays" value="<%= settings.hours_weekdays || '' %>">
+      </label>
+      <label>مواعيد الجمعة
+        <input type="text" name="hours_friday" value="<%= settings.hours_friday || '' %>">
+      </label>
+    </fieldset>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">حفظ الإعدادات</button>
+      <a href="/admin" class="btn btn-outline">عودة</a>
+    </div>
+  </form>
+</div>
+
+<style>
+.settings-form fieldset {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.settings-form legend {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  color: var(--primary);
+  font-weight: 700;
+  padding: 0 10px;
+}
+.settings-form label {
+  display: block;
+  margin-bottom: 14px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.settings-form input,
+.settings-form textarea {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  margin-top: 4px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+.settings-form input:focus,
+.settings-form textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.15);
+}
+.settings-form textarea { resize: vertical; }
+.form-actions { display: flex; gap: 12px; margin-top: 8px; }
+</style>
+
+<%- include('../partials/footer') %>
