@@ -120,7 +120,7 @@ main.container {
 
 /* Arabic calligraphy "زيتون" inside circle */
 .logo-symbol::before {
-  content: 'ج';
+  content: 'زيتون';
   font-family: var(--font-serif);
   color: #1a1a1a;
   font-size: 0.75rem;

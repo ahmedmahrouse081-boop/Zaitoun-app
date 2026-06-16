@@ -7,6 +7,8 @@ const path = require('path');
 
 const router = Router();
 
+const toBool = (v) => v === 'on' || v === '1' || v === true || v === 1;
+
 const storage = multer.diskStorage({
   destination: path.join(__dirname, '..', 'public', 'images'),
   filename(req, file, cb) {
@@ -21,218 +23,256 @@ router.get('/login', (req, res) => {
   res.render('admin/login', { error: null });
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const admin = db.prepare('SELECT * FROM admin_users WHERE username = ?').get(username);
+  const result = await db.query('SELECT * FROM admin_users WHERE username = $1', [username]);
+  const admin = result.rows[0];
   if (admin && bcrypt.compareSync(password, admin.password_hash)) {
     req.session.adminId = admin.id;
     req.session.adminName = admin.display_name;
     return res.redirect('/admin');
   }
-  res.render('admin/login', { error: 'Invalid credentials' });
+  res.render('admin/login', { error: 'بيانات الدخول غير صحيحة' });
 });
 
 router.get('/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/admin/login'));
+  req.session = null;
+  res.redirect('/admin/login');
 });
 
-router.get('/', requireAdmin, (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
+  const [
+    totalR, pendingR, preparingR, completedR,
+    revenueR, menuR, additionsR, recentR
+  ] = await Promise.all([
+    db.query('SELECT COUNT(*) as c FROM orders'),
+    db.query("SELECT COUNT(*) as c FROM orders WHERE status = 'pending'"),
+    db.query("SELECT COUNT(*) as c FROM orders WHERE status = 'preparing'"),
+    db.query("SELECT COUNT(*) as c FROM orders WHERE status = 'completed'"),
+    db.query("SELECT COALESCE(SUM(total_price), 0) as total FROM orders WHERE status != $1", ['cancelled']),
+    db.query('SELECT COUNT(*) as c FROM menu_items'),
+    db.query('SELECT COUNT(*) as c FROM additions'),
+    db.query('SELECT * FROM orders ORDER BY created_at DESC LIMIT 5'),
+  ]);
+
   const stats = {
-    totalOrders: db.prepare('SELECT COUNT(*) as c FROM orders').get().c,
-    pendingOrders: db.prepare("SELECT COUNT(*) as c FROM orders WHERE status = 'pending'").get().c,
-    preparingOrders: db.prepare("SELECT COUNT(*) as c FROM orders WHERE status = 'preparing'").get().c,
-    completedOrders: db.prepare("SELECT COUNT(*) as c FROM orders WHERE status = 'completed'").get().c,
-    totalRevenue: db.prepare('SELECT COALESCE(SUM(total_price), 0) as total FROM orders WHERE status != ?').get('cancelled').total,
-    menuItems: db.prepare('SELECT COUNT(*) as c FROM menu_items').get().c,
-    additions: db.prepare('SELECT COUNT(*) as c FROM additions').get().c,
-    recentOrders: db.prepare("SELECT * FROM orders ORDER BY created_at DESC LIMIT 5").all()
+    totalOrders: parseInt(totalR.rows[0].c),
+    pendingOrders: parseInt(pendingR.rows[0].c),
+    preparingOrders: parseInt(preparingR.rows[0].c),
+    completedOrders: parseInt(completedR.rows[0].c),
+    totalRevenue: parseFloat(revenueR.rows[0].total),
+    menuItems: parseInt(menuR.rows[0].c),
+    additions: parseInt(additionsR.rows[0].c),
+    recentOrders: recentR.rows,
   };
+
   res.render('admin/dashboard', { stats });
 });
 
-router.get('/categories', requireAdmin, (req, res) => {
-  const categories = db.prepare('SELECT c.*, (SELECT COUNT(*) FROM menu_items WHERE category_id = c.id) as item_count FROM categories c ORDER BY c.sort_order, c.name').all();
-  res.render('admin/categories', { categories });
+router.get('/categories', requireAdmin, async (req, res) => {
+  const result = await db.query(`
+    SELECT c.*, (SELECT COUNT(*) FROM menu_items WHERE category_id = c.id) as item_count
+    FROM categories c ORDER BY c.sort_order, c.name
+  `);
+  res.render('admin/categories', { categories: result.rows });
 });
 
 router.get('/categories/new', requireAdmin, (req, res) => {
   res.render('admin/category-form', { category: null });
 });
 
-router.post('/categories', requireAdmin, (req, res) => {
+router.post('/categories', requireAdmin, async (req, res) => {
   const { name, sort_order } = req.body;
-  db.prepare('INSERT INTO categories (name, sort_order) VALUES (?, ?)').run(name, parseInt(sort_order) || 0);
+  await db.query('INSERT INTO categories (name, sort_order) VALUES ($1, $2)', [name, parseInt(sort_order) || 0]);
   res.redirect('/admin/categories');
 });
 
-router.get('/categories/:id/edit', requireAdmin, (req, res) => {
-  const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(req.params.id);
+router.get('/categories/:id/edit', requireAdmin, async (req, res) => {
+  const result = await db.query('SELECT * FROM categories WHERE id = $1', [req.params.id]);
+  const category = result.rows[0];
   if (!category) return res.redirect('/admin/categories');
   res.render('admin/category-form', { category });
 });
 
-router.post('/categories/:id', requireAdmin, (req, res) => {
+router.post('/categories/:id', requireAdmin, async (req, res) => {
   const { name, sort_order } = req.body;
-  db.prepare('UPDATE categories SET name = ?, sort_order = ? WHERE id = ?').run(name, parseInt(sort_order) || 0, req.params.id);
+  await db.query('UPDATE categories SET name = $1, sort_order = $2 WHERE id = $3',
+    [name, parseInt(sort_order) || 0, req.params.id]);
   res.redirect('/admin/categories');
 });
 
-router.post('/categories/:id/delete', requireAdmin, (req, res) => {
-  db.prepare('DELETE FROM categories WHERE id = ?').run(req.params.id);
+router.post('/categories/:id/delete', requireAdmin, async (req, res) => {
+  await db.query('DELETE FROM categories WHERE id = $1', [req.params.id]);
   res.redirect('/admin/categories');
 });
 
-router.get('/menu-items', requireAdmin, (req, res) => {
-  const items = db.prepare(`
+router.get('/menu-items', requireAdmin, async (req, res) => {
+  const result = await db.query(`
     SELECT mi.*, c.name as category_name
     FROM menu_items mi
     JOIN categories c ON c.id = mi.category_id
     ORDER BY c.sort_order, mi.name
-  `).all();
-  res.render('admin/menu-items', { items });
+  `);
+  res.render('admin/menu-items', { items: result.rows });
 });
 
-router.get('/menu-items/new', requireAdmin, (req, res) => {
-  const categories = db.prepare('SELECT * FROM categories ORDER BY sort_order, name').all();
-  const allAdditions = db.prepare('SELECT * FROM additions ORDER BY name').all();
-  res.render('admin/item-form', { item: null, categories, allAdditions, selectedAdditions: [] });
+router.get('/menu-items/new', requireAdmin, async (req, res) => {
+  const [catR, addR] = await Promise.all([
+    db.query('SELECT * FROM categories ORDER BY sort_order, name'),
+    db.query('SELECT * FROM additions ORDER BY name'),
+  ]);
+  res.render('admin/item-form', { item: null, categories: catR.rows, allAdditions: addR.rows, selectedAdditions: [] });
 });
 
-router.post('/menu-items', requireAdmin, upload.single('image'), (req, res) => {
+router.post('/menu-items', requireAdmin, upload.single('image'), async (req, res) => {
   const { name, description, base_price, category_id, available, additions: selectedAdditions } = req.body;
   let image = null;
   if (req.file) image = '/images/' + req.file.filename;
 
-  const insertItem = db.prepare('INSERT INTO menu_items (category_id, name, description, base_price, image, available) VALUES (?, ?, ?, ?, ?, ?)');
-  const insertLink = db.prepare('INSERT OR IGNORE INTO item_additions (item_id, addition_id) VALUES (?, ?)');
-
-  const result = insertItem.run(category_id, name, description, parseFloat(base_price), image, available ? 1 : 0);
-  const itemId = result.lastInsertRowid;
+  const itemResult = await db.query(
+    'INSERT INTO menu_items (category_id, name, description, base_price, image, available) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+    [category_id, name, description, parseFloat(base_price), image, toBool(available)]
+  );
+  const itemId = itemResult.rows[0].id;
 
   if (selectedAdditions) {
     const ids = Array.isArray(selectedAdditions) ? selectedAdditions : [selectedAdditions];
     for (const aid of ids) {
-      insertLink.run(itemId, aid);
+      await db.query('INSERT INTO item_additions (item_id, addition_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [itemId, aid]);
     }
   }
 
   res.redirect('/admin/menu-items');
 });
 
-router.get('/menu-items/:id/edit', requireAdmin, (req, res) => {
-  const item = db.prepare('SELECT * FROM menu_items WHERE id = ?').get(req.params.id);
+router.get('/menu-items/:id/edit', requireAdmin, async (req, res) => {
+  const [itemR, catR, addR, selR] = await Promise.all([
+    db.query('SELECT * FROM menu_items WHERE id = $1', [req.params.id]),
+    db.query('SELECT * FROM categories ORDER BY sort_order, name'),
+    db.query('SELECT * FROM additions ORDER BY name'),
+    db.query('SELECT addition_id FROM item_additions WHERE item_id = $1', [req.params.id]),
+  ]);
+  const item = itemR.rows[0];
   if (!item) return res.redirect('/admin/menu-items');
-  const categories = db.prepare('SELECT * FROM categories ORDER BY sort_order, name').all();
-  const allAdditions = db.prepare('SELECT * FROM additions ORDER BY name').all();
-  const selectedAdditions = db.prepare('SELECT addition_id FROM item_additions WHERE item_id = ?').all(req.params.id).map(r => r.addition_id);
-  res.render('admin/item-form', { item, categories, allAdditions, selectedAdditions });
+  res.render('admin/item-form', {
+    item,
+    categories: catR.rows,
+    allAdditions: addR.rows,
+    selectedAdditions: selR.rows.map(r => r.addition_id),
+  });
 });
 
-router.post('/menu-items/:id', requireAdmin, upload.single('image'), (req, res) => {
+router.post('/menu-items/:id', requireAdmin, upload.single('image'), async (req, res) => {
   const { name, description, base_price, category_id, available, additions: selectedAdditions } = req.body;
-  let sql = 'UPDATE menu_items SET name = ?, description = ?, base_price = ?, category_id = ?, available = ?';
-  const params = [name, description, parseFloat(base_price), category_id, available ? 1 : 0];
+  let sql = 'UPDATE menu_items SET name = $1, description = $2, base_price = $3, category_id = $4, available = $5';
+  const params = [name, description, parseFloat(base_price), category_id, toBool(available)];
+  let idx = 6;
 
   if (req.file) {
-    sql += ', image = ?';
+    sql += `, image = $${idx++}`;
     params.push('/images/' + req.file.filename);
   }
 
-  sql += ' WHERE id = ?';
+  sql += ` WHERE id = $${idx}`;
   params.push(req.params.id);
 
-  db.prepare(sql).run(...params);
+  await db.query(sql, params);
+  await db.query('DELETE FROM item_additions WHERE item_id = $1', [req.params.id]);
 
-  db.prepare('DELETE FROM item_additions WHERE item_id = ?').run(req.params.id);
-  const insertLink = db.prepare('INSERT OR IGNORE INTO item_additions (item_id, addition_id) VALUES (?, ?)');
   if (selectedAdditions) {
     const ids = Array.isArray(selectedAdditions) ? selectedAdditions : [selectedAdditions];
     for (const aid of ids) {
-      insertLink.run(req.params.id, aid);
+      await db.query('INSERT INTO item_additions (item_id, addition_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [req.params.id, aid]);
     }
   }
 
   res.redirect('/admin/menu-items');
 });
 
-router.post('/menu-items/:id/delete', requireAdmin, (req, res) => {
-  db.prepare('DELETE FROM item_additions WHERE item_id = ?').run(req.params.id);
-  db.prepare('DELETE FROM menu_items WHERE id = ?').run(req.params.id);
+router.post('/menu-items/:id/delete', requireAdmin, async (req, res) => {
+  await db.query('DELETE FROM item_additions WHERE item_id = $1', [req.params.id]);
+  await db.query('DELETE FROM menu_items WHERE id = $1', [req.params.id]);
   res.redirect('/admin/menu-items');
 });
 
-router.get('/additions', requireAdmin, (req, res) => {
-  const additions = db.prepare('SELECT a.*, (SELECT COUNT(*) FROM item_additions WHERE addition_id = a.id) as item_count FROM additions a ORDER BY a.name').all();
-  res.render('admin/additions', { additions });
+router.get('/additions', requireAdmin, async (req, res) => {
+  const result = await db.query(`
+    SELECT a.*, (SELECT COUNT(*) FROM item_additions WHERE addition_id = a.id) as item_count
+    FROM additions a ORDER BY a.name
+  `);
+  res.render('admin/additions', { additions: result.rows });
 });
 
 router.get('/additions/new', requireAdmin, (req, res) => {
   res.render('admin/addition-form', { addition: null });
 });
 
-router.post('/additions', requireAdmin, (req, res) => {
+router.post('/additions', requireAdmin, async (req, res) => {
   const { name, price } = req.body;
-  db.prepare('INSERT INTO additions (name, price) VALUES (?, ?)').run(name, parseFloat(price) || 0);
+  await db.query('INSERT INTO additions (name, price) VALUES ($1, $2)', [name, parseFloat(price) || 0]);
   res.redirect('/admin/additions');
 });
 
-router.get('/additions/:id/edit', requireAdmin, (req, res) => {
-  const addition = db.prepare('SELECT * FROM additions WHERE id = ?').get(req.params.id);
+router.get('/additions/:id/edit', requireAdmin, async (req, res) => {
+  const result = await db.query('SELECT * FROM additions WHERE id = $1', [req.params.id]);
+  const addition = result.rows[0];
   if (!addition) return res.redirect('/admin/additions');
   res.render('admin/addition-form', { addition });
 });
 
-router.post('/additions/:id', requireAdmin, (req, res) => {
+router.post('/additions/:id', requireAdmin, async (req, res) => {
   const { name, price, available } = req.body;
-  db.prepare('UPDATE additions SET name = ?, price = ?, available = ? WHERE id = ?').run(name, parseFloat(price) || 0, available ? 1 : 0, req.params.id);
+  await db.query('UPDATE additions SET name = $1, price = $2, available = $3 WHERE id = $4',
+    [name, parseFloat(price) || 0, toBool(available), req.params.id]);
   res.redirect('/admin/additions');
 });
 
-router.post('/additions/:id/delete', requireAdmin, (req, res) => {
-  db.prepare('DELETE FROM item_additions WHERE addition_id = ?').run(req.params.id);
-  db.prepare('DELETE FROM additions WHERE id = ?').run(req.params.id);
+router.post('/additions/:id/delete', requireAdmin, async (req, res) => {
+  await db.query('DELETE FROM item_additions WHERE addition_id = $1', [req.params.id]);
+  await db.query('DELETE FROM additions WHERE id = $1', [req.params.id]);
   res.redirect('/admin/additions');
 });
 
-router.get('/orders', requireAdmin, (req, res) => {
+router.get('/orders', requireAdmin, async (req, res) => {
   const statusFilter = req.query.status || 'all';
   let sql = 'SELECT * FROM orders';
   const params = [];
   if (statusFilter !== 'all') {
-    sql += ' WHERE status = ?';
+    sql += ' WHERE status = $1';
     params.push(statusFilter);
   }
   sql += ' ORDER BY created_at DESC';
-  const orders = db.prepare(sql).all(...params);
+  const orderR = await db.query(sql, params);
+  const orders = orderR.rows;
 
   for (const order of orders) {
-    order.items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
+    const itemsR = await db.query('SELECT * FROM order_items WHERE order_id = $1', [order.id]);
+    order.items = itemsR.rows;
     for (const item of order.items) {
-      item.additions = db.prepare('SELECT * FROM order_item_additions WHERE order_item_id = ?').all(item.id);
+      const addsR = await db.query('SELECT * FROM order_item_additions WHERE order_item_id = $1', [item.id]);
+      item.additions = addsR.rows;
     }
   }
 
   res.render('admin/orders', { orders, statusFilter });
 });
 
-router.post('/orders/:id/status', requireAdmin, (req, res) => {
+router.post('/orders/:id/status', requireAdmin, async (req, res) => {
   const { status } = req.body;
-  db.prepare('UPDATE orders SET status = ? WHERE id = ?').run(status, req.params.id);
+  await db.query('UPDATE orders SET status = $1 WHERE id = $2', [status, req.params.id]);
   res.redirect('/admin/orders');
 });
 
-// ─── Settings ───
-router.get('/settings', requireAdmin, (req, res) => {
-  const rows = db.prepare('SELECT * FROM settings ORDER BY key').all();
+router.get('/settings', requireAdmin, async (req, res) => {
+  const result = await db.query('SELECT * FROM settings ORDER BY key');
   const settings = {};
-  for (const row of rows) {
+  for (const row of result.rows) {
     settings[row.key] = row.value;
   }
   res.render('admin/settings', { settings });
 });
 
-router.post('/settings', requireAdmin, (req, res) => {
-  const upsert = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
+router.post('/settings', requireAdmin, async (req, res) => {
   const allowed = [
     'site_name', 'site_tagline',
     'hero_title', 'hero_subtitle', 'hero_desc',
@@ -244,14 +284,24 @@ router.post('/settings', requireAdmin, (req, res) => {
     'contact_phone', 'contact_email', 'contact_address',
     'hours_weekdays', 'hours_friday',
   ];
-  const transaction = db.transaction(() => {
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
-        upsert.run(key, req.body[key]);
+        await client.query(
+          'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value',
+          [key, req.body[key]]
+        );
       }
     }
-  });
-  transaction();
+    await client.query('COMMIT');
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
   res.redirect('/admin/settings');
 });
 
