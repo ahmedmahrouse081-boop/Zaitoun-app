@@ -3,20 +3,12 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const { requireAdmin } = require('../middlewares/auth');
 const multer = require('multer');
-const path = require('path');
 
 const router = Router();
 
 const toBool = (v) => v === 'on' || v === '1' || v === true || v === 1;
 
-const storage = multer.diskStorage({
-  destination: path.join(__dirname, '..', 'public', 'images'),
-  filename(req, file, cb) {
-    const ext = path.extname(file.originalname);
-    cb(null, Date.now() + '-' + Math.random().toString(36).slice(2) + ext);
-  }
-});
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/login', (req, res) => {
   if (req.session.adminId) return res.redirect('/admin');
@@ -127,7 +119,6 @@ router.get('/menu-items/new', requireAdmin, async (req, res) => {
 router.post('/menu-items', requireAdmin, upload.single('image'), async (req, res) => {
   const { name, description, base_price, category_id, available, additions: selectedAdditions } = req.body;
   let image = null;
-  if (req.file) image = '/images/' + req.file.filename;
 
   const itemResult = await db.query(
     'INSERT INTO menu_items (category_id, name, description, base_price, image, available) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
@@ -166,14 +157,8 @@ router.post('/menu-items/:id', requireAdmin, upload.single('image'), async (req,
   const { name, description, base_price, category_id, available, additions: selectedAdditions } = req.body;
   let sql = 'UPDATE menu_items SET name = $1, description = $2, base_price = $3, category_id = $4, available = $5';
   const params = [name, description, parseFloat(base_price), category_id, toBool(available)];
-  let idx = 6;
 
-  if (req.file) {
-    sql += `, image = $${idx++}`;
-    params.push('/images/' + req.file.filename);
-  }
-
-  sql += ` WHERE id = $${idx}`;
+  sql += ' WHERE id = $6';
   params.push(req.params.id);
 
   await db.query(sql, params);
